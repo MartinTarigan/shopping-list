@@ -70,6 +70,7 @@ def logout_user(request):
     response.delete_cookie('last_login')
     return response
 
+
 def show_xml(request):
     data = Product.objects.all()
     return HttpResponse(serializers.serialize("xml", data), content_type="application/xml")
