@@ -1,6 +1,7 @@
 import datetime
+import json
 from django.shortcuts import render
-from django.http import HttpResponseRedirect, HttpResponse, HttpResponseNotFound
+from django.http import HttpResponseRedirect, HttpResponse, HttpResponseNotFound, JsonResponse
 from main.forms import ProductForm
 from django.urls import reverse
 from main.models import Product
@@ -74,11 +75,9 @@ def edit_product(request, id):
     # Get product berdasarkan ID
     product = Product.objects.get(pk = id)
 
-    # Set product sebagai instance dari form
     form = ProductForm(request.POST or None, instance=product)
 
     if form.is_valid() and request.method == "POST":
-        # Simpan form dan kembali ke halaman awal
         form.save()
         return HttpResponseRedirect(reverse('main:show_main'))
 
@@ -127,3 +126,22 @@ def add_product_ajax(request):
         return HttpResponse(b"CREATED", status=201)
 
     return HttpResponseNotFound()
+
+@csrf_exempt
+def create_product_flutter(request):
+    if request.method == 'POST':
+        
+        data = json.loads(request.body)
+
+        new_product = Product.objects.create(
+            user = request.user,
+            name = data["name"],
+            price = int(data["price"]),
+            description = data["description"]
+        )
+
+        new_product.save()
+
+        return JsonResponse({"status": "success"}, status=200)
+    else:
+        return JsonResponse({"status": "error"}, status=401)
